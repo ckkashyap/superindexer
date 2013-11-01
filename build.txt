@@ -1,0 +1,2 @@
+cl /DWINDOWS=1 testindex.c /Zi
+cl /DWINDOWS=1 superindexer.c /Zi
