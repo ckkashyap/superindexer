@@ -48,7 +48,7 @@ Block readBlockFromFile(std::fstream& f) {
 
 BlockOffset writeBlockToFile(Block b, std::fstream& f) {
   BlockOffset off = f.tellp();
-  std::cout << "--> " << b.data << std::endl;
+
   f.write(reinterpret_cast<char *>(&b.data), sizeof(b.data));
   for(auto& o : b.offsets) {
       f.write(reinterpret_cast<char *>(&o), sizeof(o));
@@ -89,25 +89,21 @@ FileID getNextID() {
 }
 
 
-Block getWordBlock(std::string word, std::fstream& f) {
+Block getWordBlock(std::string word, std::fstream& f, bool createIfReauired = false) {
   seekRW(f, 0);
   BlockOffset currentOffset = 0;
   Block b {readBlockFromFile(f)};
 
-  std::cout << b << std::endl;
-  
-
   for(auto c : word) {
     unsigned int i = char2int(c);
-    std::cout << "processing " << c << " => " << i  << " => " << b.offsets[i] << std::endl;
 
     if (b.offsets[i] == 0 ) {
+      if (!createIfReauired) return b;
       BlockOffset off = f.tellp();
       Block newBlock {};
       seekRW(f, 0, f.end); 
       BlockOffset newCurrent = b.offsets[i] = writeBlockToFile(newBlock, f);
       seekRW(f, off);
-      std::cout << b << std::endl;
       writeBlockToFile(b, f);
       seekRW(f, newCurrent);
       currentOffset = newCurrent;
@@ -125,7 +121,7 @@ Block getWordBlock(std::string word, std::fstream& f) {
 
 
 FileID addWord(std::string word, std::string file, std::string lineNumber, std::fstream& f) {
-  Block b = getWordBlock(word, f);
+  Block b = getWordBlock(word, f, true);
   FileID fid {b.data};
 
   if (fid == 0)
@@ -153,10 +149,8 @@ std::fstream& initializeFile(std::fstream& f, std::string fn) {
   f.close();
   f.open( fn ,f.in | f.out | f.binary );
   if (!f.is_open()) {
-    std::cout << "Creating the index file" << std::endl;
     f.open( fn , f.out | f.binary );
     Block b {};
-    b.data=123;
     writeBlockToFile(b, f);
     f.close();
     f.open( fn ,f.in | f.out | f.binary );
@@ -169,11 +163,16 @@ std::fstream& initializeFile(std::fstream& f, std::string fn) {
 int main(int argc, char *argv[]) {
   std::fstream f {};
   initializeFile(f, "index.dat");
-  FileID fid = addWord(argv[1], argv[2], argv[3], f);
-  seekRW(f, 0, f.end);
-  f.close();
-
-  std::cout << fid << std::endl;
+  if (argc == 4) {
+    FileID fid = addWord(argv[1], argv[2], argv[3], f);
+    seekRW(f, 0, f.end);
+    f.close();
+    std::cout << fid << std::endl;
+  }
+  if (argc == 2) {
+    Block b = getWordBlock(argv[1], f);
+    std::cout << b.data << std::endl;
+  }
   return 0;
 }
 
