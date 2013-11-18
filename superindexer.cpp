@@ -2,7 +2,7 @@
 #include <iostream>
 #include <fstream>
 #include <vector>
-
+#include <sstream>
 
 using BlockOffset = uint64_t;
 using FileID = uint64_t;
@@ -124,8 +124,7 @@ Block getWordBlock(std::string word, std::fstream& f) {
 
 
 
-
-FileID addWord(std::string word, std::fstream& f) {
+FileID addWord(std::string word, std::string file, std::string lineNumber, std::fstream& f) {
   Block b = getWordBlock(word, f);
   FileID fid {b.data};
 
@@ -135,9 +134,18 @@ FileID addWord(std::string word, std::fstream& f) {
   b.data = fid;
   writeBlockToFile(b, f);
 
+
+  std::ostringstream os {};
+  os << fid;
+  std::string fn = os.str();
+
+  std::fstream details {};
+  details.open(fn, details.app);
+  details << file << ", " << lineNumber << std::endl;
+  details.close();
+
   return fid;
 }
-
 
 
 
@@ -161,7 +169,7 @@ std::fstream& initializeFile(std::fstream& f, std::string fn) {
 int main(int argc, char *argv[]) {
   std::fstream f {};
   initializeFile(f, "index.dat");
-  FileID fid = addWord(argv[1], f);
+  FileID fid = addWord(argv[1], argv[2], argv[3], f);
   seekRW(f, 0, f.end);
   f.close();
 
