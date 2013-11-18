@@ -22,7 +22,8 @@ unsigned int char2int(const unsigned char ch) {
     return 10 + ch - 'a';
   }else if(ch=='_'){
     return 36;
-  }  
+  }
+  return 0;
 }
 
 
@@ -104,8 +105,8 @@ Block addWord(std::string word, std::fstream& f) {
 }
 
 
-std::fstream initializeFile(const std::string& fn) {
-  std::fstream f {};
+std::fstream& initializeFile(std::fstream& f, std::string fn) {
+  f.close();
   f.open( fn ,f.in | f.out | f.binary );
   if (!f.is_open()) {
     std::cout << "Creating the index file" << std::endl;
@@ -122,7 +123,8 @@ std::fstream initializeFile(const std::string& fn) {
 
 
 int main(int argc, char *argv[]) {
-  auto f = initializeFile("index.dat");
+  std::fstream f {};
+  initializeFile(f, "index.dat");
   addWord("abc", f);
   f.seekg(0,f.end);
   return 0;
