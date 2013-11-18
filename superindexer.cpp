@@ -13,34 +13,46 @@ struct Block{
 };
 
 
-
-
-int char2int(const char ch) {
+unsigned int char2int(const unsigned char ch) {
   if(ch>='0' && ch <='9'){
-    return ch-'0';
+    return ch - '0';
   }else if(ch>='A' && ch <='Z'){
     return 10 + ch - 'A';
+  }else if(ch>='a' && ch <='z'){
+    return 10 + ch - 'a';
   }else if(ch=='_'){
     return 36;
   }  
 }
 
 
+BlockOffset seekRW(std::fstream& f, BlockOffset off, std::ios_base::seekdir dir = std::ios_base::beg) {
+  f.seekp(off, dir);
+  f.seekg(off, dir);
+  return off;
+}
+
+
 Block readBlockFromFile(std::fstream& f) {
   Block b {};
+  BlockOffset off = f.tellg();
   f.read(reinterpret_cast<char *>(&b.data), sizeof(b.data));
   for(auto& o : b.offsets) {
       f.read(reinterpret_cast<char *>(&o), sizeof(o));
   }
+  f.seekg(off, f.beg);
   return b;  
 }
 
-Block writeBlockToFile(Block b, std::fstream& f) {
+BlockOffset writeBlockToFile(Block b, std::fstream& f) {
+  BlockOffset off = f.tellp();
+  std::cout << "--> " << b.data << std::endl;
   f.write(reinterpret_cast<char *>(&b.data), sizeof(b.data));
-  for(auto o : b.offsets) {
+  for(auto& o : b.offsets) {
       f.write(reinterpret_cast<char *>(&o), sizeof(o));
   }
-  return b;  
+  f.seekp(off, f.beg);
+  return off;  
 }
 
 
@@ -56,50 +68,63 @@ std::ostream& operator<<(std::ostream& s, Block& b) {
 }
 
 
-BlockOffset findWord(std::string word, std::fstream f) {
-  BlockOffset n {};
+Block addWord(std::string word, std::fstream& f) {
+  seekRW(f, 0);
+  BlockOffset currentOffset = 0;
+  Block b {readBlockFromFile(f)};
+
+  std::cout << b << std::endl;
   
 
   for(auto c : word) {
-    int i = char2int(c);    
+    unsigned int i = char2int(c);
+    std::cout << "processing " << c << " => " << i  << " => " << b.offsets[i] << std::endl;
+
+    if (b.offsets[i] == 0 ) {
+      BlockOffset off = f.tellp();
+      Block newBlock {};
+      seekRW(f, 0, f.end); 
+      BlockOffset newCurrent = b.offsets[i] = writeBlockToFile(newBlock, f);
+      seekRW(f, off);
+      std::cout << b << std::endl;
+      writeBlockToFile(b, f);
+      seekRW(f, newCurrent);
+      currentOffset = newCurrent;
+      b = newBlock;
+    } else {
+      currentOffset = b.offsets[i];
+      seekRW(f, currentOffset);
+      b = readBlockFromFile(f);
+    }    
   }
 
-  return n;
+  
+
+  return b;
 }
 
 
 std::fstream initializeFile(const std::string& fn) {
   std::fstream f {};
-  f.open( fn ,std::ios_base::in | std::ios_base::out | std::ios_base::binary );
+  f.open( fn ,f.in | f.out | f.binary );
   if (!f.is_open()) {
     std::cout << "Creating the index file" << std::endl;
-    f.open( fn , std::ios_base::out | std::ios_base::binary );
+    f.open( fn , f.out | f.binary );
+    Block b {};
+    b.data=123;
+    writeBlockToFile(b, f);
     f.close();
-    f.open( fn ,std::ios_base::in | std::ios_base::out | std::ios_base::binary );
+    f.open( fn ,f.in | f.out | f.binary );
   }
   return f;
 }
 
 
 
-int main(int argc, char *argv[]) {  
-  Block b{};
-
-  b.data=123;
-  int i = 0;
-  for(auto& o : b.offsets) {
-    o = i++;
-  }
-  std::cout << b << std::endl;
-
-  std::string fn {"index.dat"};
-  std::fstream f = initializeFile(fn);
-  writeBlockToFile(b, f);
-  f.close();
-  f = initializeFile(fn);
-  b = readBlockFromFile(f);
-  std::cout << b << std::endl;
-  
+int main(int argc, char *argv[]) {
+  auto f = initializeFile("index.dat");
+  addWord("abc", f);
+  f.seekg(0,f.end);
   return 0;
 }
 
