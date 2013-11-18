@@ -96,7 +96,7 @@ Block addWord(std::string word, std::fstream& f) {
       currentOffset = b.offsets[i];
       seekRW(f, currentOffset);
       b = readBlockFromFile(f);
-    }    
+    }
   }
 
   
@@ -126,7 +126,7 @@ int main(int argc, char *argv[]) {
   std::fstream f {};
   initializeFile(f, "index.dat");
   addWord("abc", f);
-  f.seekg(0,f.end);
+  seekRW(f, 0, f.end);
   return 0;
 }
 
