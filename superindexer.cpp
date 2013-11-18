@@ -5,6 +5,7 @@
 
 
 using BlockOffset = uint64_t;
+using FileID = uint64_t;
 const int BlockSize = 38;
 struct Block{
   BlockOffset data;
@@ -69,6 +70,10 @@ std::ostream& operator<<(std::ostream& s, Block& b) {
 }
 
 
+
+
+
+
 Block addWord(std::string word, std::fstream& f) {
   seekRW(f, 0);
   BlockOffset currentOffset = 0;
@@ -99,9 +104,28 @@ Block addWord(std::string word, std::fstream& f) {
     }
   }
 
-  
+    
 
   return b;
+}
+
+
+FileID getNextID() {
+  const std::string fn {"next.dat"};
+  std::fstream f {};
+  f.open(fn, f.in | f.out );
+  if(!f.is_open()) {
+    f.open( fn , f.out | f.binary );
+    f << "1" << std::endl;
+    f.close();
+    f.open("next.dat", f.in | f.out );
+  }
+  FileID i {};
+  f >> i ;
+  seekRW(f, 0);
+  f << i+1 << std::endl;
+  f.close();
+  return i;  
 }
 
 
@@ -123,10 +147,12 @@ std::fstream& initializeFile(std::fstream& f, std::string fn) {
 
 
 int main(int argc, char *argv[]) {
-  std::fstream f {};
-  initializeFile(f, "index.dat");
-  addWord("abc", f);
-  seekRW(f, 0, f.end);
+//  std::fstream f {};
+//  initializeFile(f, "index.dat");
+//  addWord("abc", f);
+//  seekRW(f, 0, f.end);
+
+  std::cout << getNextID() << std::endl;
   return 0;
 }
 
