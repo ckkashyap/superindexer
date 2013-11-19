@@ -13,8 +13,8 @@ struct Block{
   Block() : data {0}, offsets(BlockSize-1) {}
 };
 
-const std::string index_file {"index.dat"};
-const std::string next_id_file {"next.dat"};
+std::string index_file {"index.dat"};
+std::string next_id_file {"next.dat"};
 
 unsigned int char2int(const unsigned char ch) {
   if(ch>='0' && ch <='9'){
@@ -155,12 +155,15 @@ std::fstream& initializeFile(std::fstream& f, std::string fn) {
 
 int main(int argc, char *argv[]) {
   std::fstream f {};
-  initializeFile(f, index_file);
-  if (argc == 3 ) {
+
+  if (argc == 4 ) {
     std::string command {argv[1]};
+    index_file = argv[2];
+    next_id_file = index_file + ".next"; 
+    initializeFile(f, index_file);
     bool create = command == "add";
 
-    FileID fid = addWord(argv[2], f, create);
+    FileID fid = addWord(argv[3], f, create);
     seekRW(f, 0, f.end);
     f.close();
     std::cout << fid << std::endl;
