@@ -99,7 +99,10 @@ Block getWordBlock(std::string word, std::fstream& f, bool createIfReauired = fa
     unsigned int i = char2int(c);
 
     if (b.offsets[i] == 0 ) {
-      if (!createIfReauired) return b;
+      if (!createIfReauired) {
+	b.data=0;
+	return b;
+      }
       BlockOffset off = f.tellp();
       Block newBlock {};
       seekRW(f, 0, f.end); 
