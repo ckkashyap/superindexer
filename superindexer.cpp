@@ -13,6 +13,8 @@ struct Block{
   Block() : data {0}, offsets(BlockSize-1) {}
 };
 
+const std::string index_file {"index.dat"};
+const std::string next_id_file {"next.dat"};
 
 unsigned int char2int(const unsigned char ch) {
   if(ch>='0' && ch <='9'){
@@ -71,14 +73,13 @@ std::ostream& operator<<(std::ostream& s, Block& b) {
 
 
 FileID getNextID() {
-  const std::string fn {"next.dat"};
   std::fstream f {};
-  f.open(fn, f.in | f.out );
+  f.open(next_id_file, f.in | f.out );
   if(!f.is_open()) {
-    f.open( fn , f.out | f.binary );
+    f.open( next_id_file , f.out | f.binary );
     f << "1" << std::endl;
     f.close();
-    f.open("next.dat", f.in | f.out );
+    f.open(next_id_file, f.in | f.out );
   }
   FileID i {};
   f >> i ;
@@ -120,25 +121,17 @@ Block getWordBlock(std::string word, std::fstream& f, bool createIfReauired = fa
 
 
 
-FileID addWord(std::string word, std::string file, std::string lineNumber, std::fstream& f) {
-  Block b = getWordBlock(word, f, true);
+FileID addWord(std::string word, std::fstream& f, bool createIfReauired = true) {
+  Block b = getWordBlock(word, f, createIfReauired);
   FileID fid {b.data};
+
+  if (!createIfReauired) return fid;
 
   if (fid == 0)
     fid = getNextID();
 
   b.data = fid;
   writeBlockToFile(b, f);
-
-
-  std::ostringstream os {};
-  os << fid;
-  std::string fn = os.str();
-
-  std::fstream details {};
-  details.open(fn, details.app);
-  details << file << ", " << lineNumber << std::endl;
-  details.close();
 
   return fid;
 }
@@ -162,16 +155,16 @@ std::fstream& initializeFile(std::fstream& f, std::string fn) {
 
 int main(int argc, char *argv[]) {
   std::fstream f {};
-  initializeFile(f, "index.dat");
-  if (argc == 4) {
-    FileID fid = addWord(argv[1], argv[2], argv[3], f);
+  initializeFile(f, index_file);
+  if (argc == 3 ) {
+    std::string command {argv[1]};
+    bool create = command == "add";
+
+    FileID fid = addWord(argv[2], f, create);
     seekRW(f, 0, f.end);
     f.close();
     std::cout << fid << std::endl;
-  }
-  if (argc == 2) {
-    Block b = getWordBlock(argv[1], f);
-    std::cout << b.data << std::endl;
+
   }
   return 0;
 }
