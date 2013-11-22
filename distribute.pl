@@ -4,7 +4,7 @@ use strict;
 use warnings;
 
 
-my@machines=("no1slu399", "no1slu400");
+my@machines=("no1slu398", "no1slu399", "no1slu400");
 
 my$numberOfMachines=@machines;
 

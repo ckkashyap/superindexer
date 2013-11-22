@@ -36,6 +36,7 @@ for my $process (1..$numberOfProcesses) {
 	    chomp $f;
 	    `perl ../words.pl $f`;
 	}
+	`touch DONE`;
     }   
     
 }
