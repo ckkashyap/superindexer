@@ -38,10 +38,9 @@ for my $machine (@machines) {
     print "Started in $machine\n";
     my $pid=fork;
     if(!$pid) {
-	`ssh root\@$machine perl /data/superindexer-db/parallel.pl 16`;
+	`ssh root\@$machine perl /data/superindexer-db/parallel.pl 20`;
+	exit;
     }
-    print "Finished in $machine\n";
-    
-    
+    print "Finished in $machine\n";  
 }
 
