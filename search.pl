@@ -13,11 +13,13 @@ sub breakWord {
     return @list;
 }
 
-my($processNummber, $word)=@ARGV;
+my$processNummber = shift;
 
-my@list=breakWord($word);
+my %result;
+my $firstTime=1;
+for my $word (@ARGV) {
 
-
+    my@list=breakWord($word);
 
     my$counter=0;
     my$indexFile="rootIndex.dat";
@@ -26,7 +28,7 @@ my@list=breakWord($word);
 
 	next if $part =~ m/^\s*$/;
 	if($counter>0) {
-	    $indexFile=sprintf "$processNummber/$indexFile%09d.dat", $output;
+	    $indexFile=sprintf "$indexFile%09d.dat", $output;
 	}
 	$counter++;
 	$output=`./superindexer search $processNummber/$indexFile $part`;
@@ -36,7 +38,26 @@ my@list=breakWord($word);
 
     my$fileName=sprintf "$indexFile%09d.details", $output;
 
-    my@result=`tail -n +2 $processNummber/$fileName`;
-    print @result;
+    my@res=`tail -n +2 $processNummber/$fileName`;
+    my $num = @res;
+    if ($firstTime) {
+	$firstTime=0;
+	for(@res) {
+	    $result{$_}=1;
+	}
+    }else{
+	my%temp;
+	for(@res) {
+	    $temp{$_}=1;
+	}
+	for(keys %result) {
+	    delete $result{$_} unless $temp{$_};
+	}
+    }
+
+}
 
 
+for (keys %result) {
+    print;
+}
