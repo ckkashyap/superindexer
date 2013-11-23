@@ -35,6 +35,8 @@ for my $machine (@machines) {
     `scp parallel.pl root\@$machine:/data/superindexer-db`;
     `scp superindexer root\@$machine:/data/superindexer-db`;
     `scp words.pl root\@$machine:/data/superindexer-db`;
+    `scp search.pl root\@$machine:/data/superindexer-db`;
+    `scp searchserver.pl root\@$machine:/data/superindexer-db`;
     print "Started in $machine\n";
     my $pid=fork;
     if(!$pid) {
