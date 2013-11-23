@@ -32,8 +32,6 @@ while (my $c = $d->accept) {
 		my$file=$children[$processNumber-1];
 		my@list=<$file>;
 		$result.=join "", @list;
-		open TMP, ">/data/tmp/$processNumber.output";
-		print TMP @list;
 	    }
 	    
 	    $res->content($result);
