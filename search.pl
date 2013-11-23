@@ -4,9 +4,6 @@ use strict;
 use warnings;
 
 
-
-
-
 sub breakWord {
     my($word)=@_;
     my@list;
@@ -16,11 +13,12 @@ sub breakWord {
     return @list;
 }
 
-my($numberOfProcesses, $word)=@ARGV;
+my($processNummber, $word)=@ARGV;
 
 my@list=breakWord($word);
 
-for my $i (1..$numberOfProcesses) {
+
+
     my$counter=0;
     my$indexFile="rootIndex.dat";
     my$output;
@@ -28,16 +26,17 @@ for my $i (1..$numberOfProcesses) {
 
 	next if $part =~ m/^\s*$/;
 	if($counter>0) {
-	    $indexFile=sprintf "$i/$indexFile%09d.dat", $output;
+	    $indexFile=sprintf "$processNummber/$indexFile%09d.dat", $output;
 	}
 	$counter++;
-	$output=`./superindexer search $i/$indexFile $part`;
+	$output=`./superindexer search $processNummber/$indexFile $part`;
 	chomp$output;
     }
-    next if $output eq "0";
+    exit if $output eq "0";
 
     my$fileName=sprintf "$indexFile%09d.details", $output;
 
-    my@result=`tail -n +2 $i/$fileName`;
+    my@result=`tail -n +2 $processNummber/$fileName`;
     print @result;
-}
+
+
