@@ -41,6 +41,7 @@ for my $machine (@machines) {
     my $pid=fork;
     if(!$pid) {
 	`ssh root\@$machine perl /data/superindexer-db/parallel.pl 20`;
+	`ssh root\@$machine perl /data/superindexer-db/searchserver.pl 20`;
 	exit;
     }
     print "Finished in $machine\n";  
