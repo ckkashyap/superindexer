@@ -17,6 +17,9 @@ sub breakWord {
 
 my $fn=$ARGV[0];
 
+$fn=~m#.*/(.*)#;
+my$bn=$1;
+
 
 open FILE, $fn;
 
@@ -26,11 +29,11 @@ my%lookup = (
     "include" => 1,
     );
 
-my %goodWords;
+my %goodWords = ($bn=>1);
 while(<FILE>) {
     next if /^\s*$/;
-    my@words=split/[^a-zA-Z0-9_]/;
-    my@properWords = grep {(3 <= length $_) && (30 >= length $_)} grep {!$lookup{$_}} grep {m/^\S+$/} @words;
+    my@words=split/[^a-zA-Z0-9_:]/;
+    my@properWords = grep {(3 <= length $_) && (100 >= length $_)} grep {!$lookup{$_}} grep {m/^\S+$/} @words;
     next unless @properWords;
     for my $word (@properWords) {
 	next if $word =~ m/^\s*$/;
