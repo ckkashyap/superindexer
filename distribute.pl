@@ -6,6 +6,23 @@ use warnings;
 
 my@machines=("no1slu398", "no1slu399", "no1slu400");
 
+
+my@rmChildren;
+for my $machine (@machines) {
+    my$pid=fork;
+    unless($pid) {
+	sleep 1;
+	`ssh root\@$machine rm -rf /data/superindexer-db`;
+	`ssh root\@$machine mkdir /data/superindexer-db`;
+	exit;
+    }
+    push @rmChildren, $pid;
+}
+for my$pid (@rmChildren) {
+    wait;
+}
+
+
 my$numberOfMachines=@machines;
 
 my($fileList) = @ARGV;

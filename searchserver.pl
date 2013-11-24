@@ -4,6 +4,8 @@ use strict;
 use warnings;
 
 
+chdir "/data/superindexer-db";
+
 my($numberOfProcesses)=@ARGV;
 
 

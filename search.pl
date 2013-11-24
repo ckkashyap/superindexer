@@ -3,6 +3,7 @@
 use strict;
 use warnings;
 
+chdir "/data/superindexer-db";
 
 sub breakWord {
     my($word)=@_;
