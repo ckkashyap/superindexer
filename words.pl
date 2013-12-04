@@ -16,12 +16,15 @@ sub breakWord {
 }
 
 my $fn=$ARGV[0];
-
+open LIST,">>list.txt";
+print LIST "$fn\n";
 my$type=`file "$fn" | grep text`;
 exit unless $type;
+print LIST "Processing\n";
 
-print "OK\n";
-exit;
+
+
+
 
 $fn=~m#.*/(.*)#;
 my$bn=$1;
